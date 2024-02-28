@@ -137,7 +137,7 @@ function App() {
     const address = "0x1.icon/" + recipient
     console.log(address)
 
-     signingClientObj.execute(
+    signingClientObj.execute(
         acc[0].address,
         "archway1sg2kgqjhj7vyu0x9tflx4ju9vjn2x6c7g39vx3tv9ethfg9d9zns6ajpja",
         {"deposit_denom": {"denom":"ibc/43897B9739BD63E3A08A88191999C632E052724AB96BD4C74AE31375C991F48D", "to":address,"data":[]}},
