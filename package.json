@@ -24,7 +24,9 @@
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
-    "proto-build": "zx ./src/proto-types-gen/scripts/proto-gen.mjs"
+    "proto-build": "zx ./src/proto-types-gen/scripts/proto-gen.mjs",
+    "predeploy": "yarn run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
