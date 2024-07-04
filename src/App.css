@@ -1,0 +1,91 @@
+/* App.css */
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+  }
+
+  .App {
+    text-align: center;
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+  }
+
+  h1 {
+    color: #333;
+    margin-bottom: 20px;
+  }
+
+  button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 10px 5px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+  }
+
+  button:hover {
+    background-color: #0056b3;
+  }
+
+  input {
+    padding: 10px;
+    margin: 10px 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    width: calc(100% - 42px); /* Adjusting width to fit within container */
+    box-sizing: border-box;
+  }
+
+  p {
+    font-size: 18px;
+    color: #555;
+    margin: 10px 0;
+  }
+
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .actions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 20px 0;
+  }
+
+  .actions button {
+    flex: 1;
+    margin: 5px;
+  }
+
+  .Data-entry {
+    background-color: #e3f2fd;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 5px 0;
+    width: calc(100% - 20px);
+    box-sizing: border-box;
+  }
+
+  .Data-entry button {
+    background-color: #ff6f61;
+  }
+
+  .Data-entry button:hover {
+    background-color: #e53935;
+  }
