@@ -82,6 +82,19 @@ function App() {
         setDB(data)
         syncBadDebt()
     }
+
+    async function syncPrice() {
+        let newData = { ...db }; // Create a shallow copy of the db object
+
+        for (const [symbol, collateral] of Object.entries(tokens)) {
+            newData[symbol] = { ...newData[symbol] }; // Create a shallow copy of the nested object
+            newData[symbol]["price"] = roundToFixed(await getPrice(symbol), 4)
+        }
+
+        setDB(newData); // Set the newData as the updated state
+        console.log("Updated data:", newData); // Logging the updated data for debugging
+    }
+
     function roundToFixed(value, decimalPlaces) {
         return Number(value.toFixed(decimalPlaces));
       }
@@ -98,7 +111,6 @@ function App() {
             })
             .build();
         const result = await iconService.call(call).execute();
-        console.log(result)
         return parseInt(result, 16) / 10 ** 18;
     }
 
@@ -271,7 +283,8 @@ function App() {
             <button onClick={redeem}>Redeem Bad Debt</button>
             <button onClick={redeemAndSwap}>Redeem Bad Debt and Swap</button>
           </div>
-          <button onClick={sync}>Sync</button>
+          <button onClick={syncPrice}>Sync Price</button>
+          <button onClick={sync}>Sync All</button>
           <Data data={db} liquidate={liquidate} />
         </div>
       </div>
