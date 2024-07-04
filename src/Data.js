@@ -6,14 +6,14 @@ const Data = ({ data, liquidate }) => {
     <div className="data-container">
       {Object.keys(data).map(key => (
         <div key={key} className="data-category">
-          <h2>{key} Price: {data[key]["price"]}</h2>
+          <h2>{key} Price: ${data[key]["price"]}</h2>
           <ul>
             {data[key].data.map((item, index) => (
               <li key={index} className="data-entry">
                 <div className="entry-info">
                   <span><strong>Address:</strong> {item.address}</span>
                   <span><strong>Liquidation Price:</strong> {item.liquidationPrice}</span>
-                  <span><strong>Amount:</strong> {item.debt}</span>
+                  <span><strong>Debt:</strong> ${item.debt}</span>
                 </div>
                 <button className="liquidate-button" onClick={() => liquidate(item.address, key)}>Liquidate</button>
               </li>

@@ -55,7 +55,7 @@ function App() {
             data[symbol] = {}
             data[symbol]["data"] = []
             console.log(remaining)
-            data[symbol]["price"] = await getPrice(symbol)
+            data[symbol]["price"] = roundToFixed(await getPrice(symbol),4)
             while (remaining > 0) {
                 const nrOfPositions = Math.min(100, remaining);
                 const borrowers = await getBorrowers(collateral, nrOfPositions, currentId);
@@ -68,8 +68,8 @@ function App() {
                         let d = parseInt(borrower.debt, 16);
                         data[symbol]["data"].push({
                             collateral: c,
-                            debt: d / 10 ** 18,
-                            liquidationPrice: ((((11765 * 10 ** 18) / 10000) * d) / c) / 10 ** 18,
+                            debt:  roundToFixed(d / 10 ** 18, 4),
+                            liquidationPrice: roundToFixed(((((11765 * 10 ** 18) / 10000) * d) / c) / 10 ** 18, 4),
                             address: borrower.address
                         });
                     }
@@ -82,6 +82,10 @@ function App() {
         setDB(data)
         syncBadDebt()
     }
+    function roundToFixed(value, decimalPlaces) {
+        return Number(value.toFixed(decimalPlaces));
+      }
+
 
     async function getPrice(symbol) {
         const callBuilder = new CallBuilder();
@@ -261,7 +265,7 @@ function App() {
             type="text"
             value={bdAmount}
             onChange={handleInputChange}
-            placeholder="Enter value"
+            placeholder="bnUSD amount"
           />
           <div className="actions">
             <button onClick={redeem}>Redeem Bad Debt</button>
