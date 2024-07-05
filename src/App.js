@@ -7,7 +7,7 @@ const { IconConverter } = IconService;
 const httpProvider = new HttpProvider('https://wallet.icon.foundation/api/v3/');
 const iconService = new IconService(httpProvider);
 const tokens = {
-    "sICX": "cx2609b924e33ef00b648a409245c7ea394c467824",
+    "ICX": "cx2609b924e33ef00b648a409245c7ea394c467824",
     "BTCB": "cx5b5a03cb525a1845d0af3a872d525b18a810acb0",
     "ETH": "cx288d13e1b63563459a2ac6179f237711f6851cb5",
     "INJ": "cx4297f4b63262507623b6ad575d0d8dd2db980e4e",
@@ -63,7 +63,8 @@ function App() {
             data[symbol] = {}
             data[symbol]["data"] = []
             console.log(remaining)
-            data[symbol]["price"] = roundToFixed(await getPrice(symbol),4)
+            data[symbol]["price"] = roundToFixed(await getPrice("ICX"), 4)
+
             while (remaining > 0) {
                 const nrOfPositions = Math.min(100, remaining);
                 const borrowers = await getBorrowers(collateral, nrOfPositions, currentId);
@@ -73,11 +74,20 @@ function App() {
                 for (const borrower of borrowers) {
                     if (parseInt(borrower.debt, 16) != 0) {
                         let c = parseInt(borrower[symbol], 16);
+                        if (symbol == "ICX") {
+                            c = parseInt(borrower["sICX"], 16);
+                        }
                         let d = parseInt(borrower.debt, 16);
+
+
+                        let liquidationPrice = ((((11765 * 10 ** 18) / 10000) * d) / c)
+                        if (symbol == "ICX") {
+                            liquidationPrice = liquidationPrice / (await getRate())
+                        }
                         data[symbol]["data"].push({
                             collateral: c,
-                            debt:  roundToFixed(d / 10 ** 18, 4),
-                            liquidationPrice: roundToFixed(((((11765 * 10 ** 18) / 10000) * d) / c) / 10 ** 18, 4),
+                            debt: roundToFixed(d / 10 ** 18, 4),
+                            liquidationPrice: roundToFixed(liquidationPrice / 10 ** 18, 4),
                             address: borrower.address
                         });
                     }
@@ -90,7 +100,7 @@ function App() {
         updateGraphData(data);
 
         for (const [symbol, collateral] of Object.entries(tokens)) {
-            data[symbol]["data"] = data[symbol]["data"].slice(0,5)
+            data[symbol]["data"] = data[symbol]["data"].slice(0, 5)
 
         }
         setDB(data)
@@ -102,7 +112,11 @@ function App() {
 
         for (const [symbol, collateral] of Object.entries(tokens)) {
             newData[symbol] = { ...newData[symbol] }; // Create a shallow copy of the nested object
-            newData[symbol]["price"] = roundToFixed(await getPrice(symbol), 4)
+            if (symbol == "sICX") {
+                newData[symbol]["price"] = roundToFixed(await getPrice("ICX"), 4)
+            } else {
+                newData[symbol]["price"] = roundToFixed(await getPrice(symbol), 4)
+            }
         }
 
         setDB(newData); // Set the newData as the updated state
@@ -111,7 +125,7 @@ function App() {
 
     function roundToFixed(value, decimalPlaces) {
         return Number(value.toFixed(decimalPlaces));
-      }
+    }
 
 
     async function getPrice(symbol) {
@@ -128,6 +142,18 @@ function App() {
         return parseInt(result, 16) / 10 ** 18;
     }
 
+    async function getRate() {
+        const callBuilder = new CallBuilder();
+        const call = callBuilder
+            .from(walletAddress)
+            .to("cx43e2eec79eb76293c298f2b17aec06097be606e0")
+            .method("getTodayRate")
+            .build();
+        const result = await iconService.call(call).execute();
+        return parseInt(result, 16) / 10 ** 18;
+    }
+
+
     async function syncBadDebt(symbol) {
         const callBuilder = new CallBuilder();
         const call = callBuilder
@@ -143,7 +169,7 @@ function App() {
             totalBadDebt += Number((data.bnUSD.debt_details[key].bad_debt));
         }
 
-        setBadDebt(totalBadDebt / 10**18)
+        setBadDebt(totalBadDebt / 10 ** 18)
     }
 
 
@@ -190,7 +216,7 @@ function App() {
             new CustomEvent("ICONEX_RELAY_REQUEST", {
                 detail: {
                     type: "REQUEST_JSON-RPC",
-                    payload:  JSON.parse(rpc)
+                    payload: JSON.parse(rpc)
                 }
             }))
 
@@ -207,7 +233,7 @@ function App() {
             .method("retireBadDebt")
             .params({
                 "_symbol": "",
-                "_value": IconConverter.toBigNumber(bdAmount*10**18)
+                "_value": IconConverter.toBigNumber(bdAmount * 10 ** 18)
             })
             .version("0x3")
             .build();
@@ -222,7 +248,7 @@ function App() {
             new CustomEvent("ICONEX_RELAY_REQUEST", {
                 detail: {
                     type: "REQUEST_JSON-RPC",
-                    payload:  JSON.parse(rpc)
+                    payload: JSON.parse(rpc)
                 }
             }))
 
@@ -239,7 +265,7 @@ function App() {
             .method("transfer")
             .params({
                 "_to": "cx5bd0bdbd07550141c6bfd3bd039168a9aa0bf0b6",
-                "_value": IconConverter.toBigNumber(bdAmount*10**18)
+                "_value": IconConverter.toBigNumber(bdAmount * 10 ** 18)
             })
             .version("0x3")
             .build();
@@ -254,22 +280,22 @@ function App() {
             new CustomEvent("ICONEX_RELAY_REQUEST", {
                 detail: {
                     type: "REQUEST_JSON-RPC",
-                    payload:  JSON.parse(rpc)
+                    payload: JSON.parse(rpc)
                 }
             }))
 
     }
 
-    String.prototype.hexEncode = function(){
+    String.prototype.hexEncode = function () {
         var hex, i;
 
         var result = "";
-        for (i=0; i<this.length; i++) {
+        for (i = 0; i < this.length; i++) {
             hex = this.charCodeAt(i).toString(16);
-            result += (""+hex).slice(-4);
+            result += ("" + hex).slice(-4);
         }
 
-        return "0x"+result
+        return "0x" + result
     }
 
     async function redeemCollateral() {
@@ -283,7 +309,7 @@ function App() {
             .method("transfer")
             .params({
                 "_to": "cxa5316f98fe4c6f4ffa3ac1f05ead895a8423b121",
-                "_value": IconConverter.toBigNumber(bdAmount*10**18),
+                "_value": IconConverter.toBigNumber(bdAmount * 10 ** 18),
                 "_data": tokens[selectedToken].hexEncode()
             })
             .version("0x3")
@@ -299,7 +325,7 @@ function App() {
             new CustomEvent("ICONEX_RELAY_REQUEST", {
                 detail: {
                     type: "REQUEST_JSON-RPC",
-                    payload:  JSON.parse(rpc)
+                    payload: JSON.parse(rpc)
                 }
             }))
 
@@ -340,36 +366,36 @@ function App() {
 
     return (
         <div className="App">
-        <h1>ICON React Example</h1>
-        <div className="container">
-          <button onClick={connectWallet}>Connect Wallet</button>
-          <p>Connected Wallet Address: {walletAddress}</p>
-          <button onClick={syncBadDebt}>Update Bad Debt</button>
-          <p>Current Bad Debt: {badDebt}</p>
-          <input
-            type="text"
-            value={bdAmount}
-            onChange={handleInputChange}
-            placeholder="bnUSD amount"
-          />
-          <div className="actions">
-            <button onClick={redeem}>Redeem Bad Debt</button>
-            <button onClick={redeemAndSwap}>Redeem Bad Debt and Swap</button>
-          </div>
-          <select value={selectedToken} onChange={handleTokenChange}>
+            <h1>ICON React Example</h1>
+            <div className="container">
+                <button onClick={connectWallet}>Connect Wallet</button>
+                <p>Connected Wallet Address: {walletAddress}</p>
+                <button onClick={syncBadDebt}>Update Bad Debt</button>
+                <p>Current Bad Debt: {badDebt}</p>
+                <input
+                    type="text"
+                    value={bdAmount}
+                    onChange={handleInputChange}
+                    placeholder="bnUSD amount"
+                />
+                <div className="actions">
+                    <button onClick={redeem}>Redeem Bad Debt</button>
+                    <button onClick={redeemAndSwap}>Redeem Bad Debt and Swap</button>
+                </div>
+                <select value={selectedToken} onChange={handleTokenChange}>
                     {Object.keys(tokens).map((token) => (
                         <option key={token} value={token}>
                             {token}
                         </option>
                     ))}
                 </select>
-            <button onClick={redeemCollateral}>Redeem Collateral 2% Fee</button>
-          <button onClick={syncPrice}>Sync Price</button>
-          <button onClick={sync}>Sync All</button>
-          <Data data={db} liquidate={liquidate} graphData={graphData} />
+                <button onClick={redeemCollateral}>Redeem Collateral 2% Fee</button>
+                <button onClick={syncPrice}>Sync Price</button>
+                <button onClick={sync}>Sync All</button>
+                <Data data={db} liquidate={liquidate} graphData={graphData} />
 
+            </div>
         </div>
-      </div>
 
     );
 }
