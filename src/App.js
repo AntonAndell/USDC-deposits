@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { IconService, HttpProvider, IconBuilder, CallBuilder, CallTransactionBuilder } from 'icon-sdk-js';
 import Data from './Data';
+import Graph from './Graph';
 import './App.css';
 const { IconConverter } = IconService;
 const httpProvider = new HttpProvider('https://wallet.icon.foundation/api/v3/');
@@ -18,10 +19,17 @@ function App() {
     const [db, setDB] = useState('');
     const [badDebt, setBadDebt] = useState('');
     const [bdAmount, setBdAmount] = useState('');
+    const [selectedToken, setSelectedToken] = useState(Object.keys(tokens)[0]);
+    const [graphData, setGraphData] = useState([]);
 
     const handleInputChange = (event) => {
         setBdAmount(event.target.value);
     };
+
+    const handleTokenChange = (event) => {
+        setSelectedToken(event.target.value);
+    };
+
 
     useEffect(() => {
         window.addEventListener('ICONEX_RELAY_RESPONSE', (event) => {
@@ -77,7 +85,13 @@ function App() {
                 }
             }
             data[symbol]["data"].sort((a, b) => b.liquidationPrice - a.liquidationPrice);
+        }
+
+        updateGraphData(data);
+
+        for (const [symbol, collateral] of Object.entries(tokens)) {
             data[symbol]["data"] = data[symbol]["data"].slice(0,5)
+
         }
         setDB(data)
         syncBadDebt()
@@ -246,6 +260,51 @@ function App() {
 
     }
 
+    String.prototype.hexEncode = function(){
+        var hex, i;
+
+        var result = "";
+        for (i=0; i<this.length; i++) {
+            hex = this.charCodeAt(i).toString(16);
+            result += (""+hex).slice(-4);
+        }
+
+        return "0x"+result
+    }
+
+    async function redeemCollateral() {
+        const timestamp = (new Date()).getTime() * 1000;
+        let tx = new CallTransactionBuilder()
+            .nid("0x1")
+            .from(walletAddress)
+            .stepLimit(400000000)
+            .timestamp(timestamp)
+            .to("cx88fd7df7ddff82f7cc735c871dc519838cb235bb")
+            .method("transfer")
+            .params({
+                "_to": "cxa5316f98fe4c6f4ffa3ac1f05ead895a8423b121",
+                "_value": IconConverter.toBigNumber(bdAmount*10**18),
+                "_data": tokens[selectedToken].hexEncode()
+            })
+            .version("0x3")
+            .build();
+        let rpc = JSON.stringify({
+            jsonrpc: "2.0",
+            method: "icx_sendTransaction",
+            params: IconConverter.toRawTransaction(tx),
+            id: 50889
+        });
+
+        window.dispatchEvent(
+            new CustomEvent("ICONEX_RELAY_REQUEST", {
+                detail: {
+                    type: "REQUEST_JSON-RPC",
+                    payload:  JSON.parse(rpc)
+                }
+            }))
+
+    }
+
 
 
     async function getBorrowerCount(collateral) {
@@ -262,6 +321,20 @@ function App() {
         const result = await iconService.call(call).execute();
         console.log(result)
         return result // Convert hexadecimal result to integer
+    }
+    function updateGraphData(data) {
+        const newGraphData = [];
+        for (const [symbol, collateral] of Object.entries(tokens)) {
+            const symbolData = data[symbol]["data"];
+            symbolData.forEach(item => {
+                newGraphData.push({
+                    price: item.liquidationPrice,
+                    amount: item.debt,
+                    symbol: symbol
+                });
+            });
+        }
+        setGraphData(newGraphData);
     }
 
 
@@ -283,9 +356,18 @@ function App() {
             <button onClick={redeem}>Redeem Bad Debt</button>
             <button onClick={redeemAndSwap}>Redeem Bad Debt and Swap</button>
           </div>
+          <select value={selectedToken} onChange={handleTokenChange}>
+                    {Object.keys(tokens).map((token) => (
+                        <option key={token} value={token}>
+                            {token}
+                        </option>
+                    ))}
+                </select>
+            <button onClick={redeemCollateral}>Redeem Collateral 2% Fee</button>
           <button onClick={syncPrice}>Sync Price</button>
           <button onClick={sync}>Sync All</button>
-          <Data data={db} liquidate={liquidate} />
+          <Data data={db} liquidate={liquidate} graphData={graphData} />
+
         </div>
       </div>
 
