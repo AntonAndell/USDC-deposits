@@ -63,7 +63,7 @@ function App() {
             data[symbol] = {}
             data[symbol]["data"] = []
             console.log(remaining)
-            data[symbol]["price"] = roundToFixed(await getPrice("ICX"), 4)
+            data[symbol]["price"] = roundToFixed(await getPrice(symbol), 4)
 
             while (remaining > 0) {
                 const nrOfPositions = Math.min(100, remaining);
