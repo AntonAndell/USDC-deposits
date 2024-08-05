@@ -12,7 +12,8 @@ const tokens = {
     "ETH": "cx288d13e1b63563459a2ac6179f237711f6851cb5",
     "INJ": "cx4297f4b63262507623b6ad575d0d8dd2db980e4e",
     "BNB": "cx2d552c485ec8bcaa75aac02424e2aca6ffdb2f1b",
-    "AVAX": "cx66a031cc3bd305c76371fb586e93801b948254f0"
+    "AVAX": "cx66a031cc3bd305c76371fb586e93801b948254f0",
+    "BTC": "cx07b184a37f03c6ab681fcbd0b45aec6dc3eafbeb"
 };
 function App() {
     const [walletAddress, setWalletAddress] = useState('');
