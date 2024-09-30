@@ -8,14 +8,18 @@ const httpProvider = new HttpProvider('https://wallet.icon.foundation/api/v3/');
 const iconService = new IconService(httpProvider);
 const tokens = {
     "ICX": "cx2609b924e33ef00b648a409245c7ea394c467824",
+    "AVAX": "cx66a031cc3bd305c76371fb586e93801b948254f0",
+    "BNB": "cx2d552c485ec8bcaa75aac02424e2aca6ffdb2f1b",
+    "BTC": "cx07b184a37f03c6ab681fcbd0b45aec6dc3eafbeb",
     "BTCB": "cx5b5a03cb525a1845d0af3a872d525b18a810acb0",
     "ETH": "cx288d13e1b63563459a2ac6179f237711f6851cb5",
     "INJ": "cx4297f4b63262507623b6ad575d0d8dd2db980e4e",
-    "BNB": "cx2d552c485ec8bcaa75aac02424e2aca6ffdb2f1b",
-    "AVAX": "cx66a031cc3bd305c76371fb586e93801b948254f0",
-    "BTC": "cx07b184a37f03c6ab681fcbd0b45aec6dc3eafbeb"
-};
-function App() {
+    "SUI": "cx508002ec116fbf3ab406329c0df28e70d7e75fb3",
+    "tBTC": "cx15ddac8c2663bd7e71ca1688dffa426070752fbd",
+    "weETH": "cxce7b23917ddf57656010decd6017fe5016de681b",
+    "wstETH": "cxb940dbfbc45c92f3a0cde464c4331102e7a84da8"
+  };
+  function App() {
     const [walletAddress, setWalletAddress] = useState('');
     const [db, setDB] = useState('');
     const [badDebt, setBadDebt] = useState('');
