@@ -22,7 +22,6 @@ const tokens = {
   function App() {
     const [walletAddress, setWalletAddress] = useState('');
     const [db, setDB] = useState('');
-    const [badDebt, setBadDebt] = useState('');
     const [bdAmount, setBdAmount] = useState('');
     const [selectedToken, setSelectedToken] = useState(Object.keys(tokens)[0]);
     const [graphData, setGraphData] = useState([]);
@@ -65,6 +64,7 @@ const tokens = {
         for (const [symbol, collateral] of Object.entries(tokens)) {
             let remaining = await getBorrowerCount(collateral);
             let currentId = 0;
+            let decimals = await getDecimals(collateral)
             data[symbol] = {}
             data[symbol]["data"] = []
             console.log(remaining)
@@ -85,7 +85,7 @@ const tokens = {
                         let d = parseInt(borrower.debt, 16);
 
 
-                        let liquidationPrice = ((((11765 * 10 ** 18) / 10000) * d) / c)
+                        let liquidationPrice = ((((11765 * 10 ** decimals) / 10000) * d) / c)
                         if (symbol == "ICX") {
                             liquidationPrice = liquidationPrice / (await getRate())
                         }
@@ -109,7 +109,6 @@ const tokens = {
 
         }
         setDB(data)
-        syncBadDebt()
     }
 
     async function syncPrice() {
@@ -147,6 +146,19 @@ const tokens = {
         return parseInt(result, 16) / 10 ** 18;
     }
 
+    async function getDecimals(token) {
+        const callBuilder = new CallBuilder();
+        const call = callBuilder
+            .from(walletAddress)
+            .to(token)
+            .method("decimals")
+            .params({
+            })
+            .build();
+        const result = await iconService.call(call).execute();
+        return parseInt(result, 16);
+    }
+
     async function getRate() {
         const callBuilder = new CallBuilder();
         const call = callBuilder
@@ -157,26 +169,6 @@ const tokens = {
         const result = await iconService.call(call).execute();
         return parseInt(result, 16) / 10 ** 18;
     }
-
-
-    async function syncBadDebt(symbol) {
-        const callBuilder = new CallBuilder();
-        const call = callBuilder
-            .from(walletAddress)
-            .to("cx66d4d90f5f113eba575bf793570135f9b10cece1")
-            .method("getAvailableAssets")
-            .build();
-        const data = await iconService.call(call).execute();
-        let totalBadDebt = 0;
-
-        // Iterate over the debt_details and add each bad_debt
-        for (const key in data.bnUSD.debt_details) {
-            totalBadDebt += Number((data.bnUSD.debt_details[key].bad_debt));
-        }
-
-        setBadDebt(totalBadDebt / 10 ** 18)
-    }
-
 
     async function getBorrowers(collateral, amount, start) {
         const callBuilder = new CallBuilder();
@@ -206,71 +198,8 @@ const tokens = {
             .method("liquidate")
             .params({
                 "_owner": address,
+                "_amount": IconConverter.toBigNumber(bdAmount * 10 ** 18),
                 "_collateralSymbol": symbol
-            })
-            .version("0x3")
-            .build();
-        let rpc = JSON.stringify({
-            jsonrpc: "2.0",
-            method: "icx_sendTransaction",
-            params: IconConverter.toRawTransaction(tx),
-            id: 50889
-        });
-
-        window.dispatchEvent(
-            new CustomEvent("ICONEX_RELAY_REQUEST", {
-                detail: {
-                    type: "REQUEST_JSON-RPC",
-                    payload: JSON.parse(rpc)
-                }
-            }))
-
-    }
-
-    async function redeem() {
-        const timestamp = (new Date()).getTime() * 1000;
-        let tx = new CallTransactionBuilder()
-            .nid("0x1")
-            .from(walletAddress)
-            .stepLimit(400000000)
-            .timestamp(timestamp)
-            .to("cx66d4d90f5f113eba575bf793570135f9b10cece1")
-            .method("retireBadDebt")
-            .params({
-                "_symbol": "",
-                "_value": IconConverter.toBigNumber(bdAmount * 10 ** 18)
-            })
-            .version("0x3")
-            .build();
-        let rpc = JSON.stringify({
-            jsonrpc: "2.0",
-            method: "icx_sendTransaction",
-            params: IconConverter.toRawTransaction(tx),
-            id: 50889
-        });
-
-        window.dispatchEvent(
-            new CustomEvent("ICONEX_RELAY_REQUEST", {
-                detail: {
-                    type: "REQUEST_JSON-RPC",
-                    payload: JSON.parse(rpc)
-                }
-            }))
-
-    }
-
-    async function redeemAndSwap() {
-        const timestamp = (new Date()).getTime() * 1000;
-        let tx = new CallTransactionBuilder()
-            .nid("0x1")
-            .from(walletAddress)
-            .stepLimit(400000000)
-            .timestamp(timestamp)
-            .to("cx88fd7df7ddff82f7cc735c871dc519838cb235bb")
-            .method("transfer")
-            .params({
-                "_to": "cx5bd0bdbd07550141c6bfd3bd039168a9aa0bf0b6",
-                "_value": IconConverter.toBigNumber(bdAmount * 10 ** 18)
             })
             .version("0x3")
             .build();
@@ -375,18 +304,12 @@ const tokens = {
             <div className="container">
                 <button onClick={connectWallet}>Connect Wallet</button>
                 <p>Connected Wallet Address: {walletAddress}</p>
-                <button onClick={syncBadDebt}>Update Bad Debt</button>
-                <p>Current Bad Debt: {badDebt}</p>
                 <input
                     type="text"
                     value={bdAmount}
                     onChange={handleInputChange}
                     placeholder="bnUSD amount"
                 />
-                <div className="actions">
-                    <button onClick={redeem}>Redeem Bad Debt</button>
-                    <button onClick={redeemAndSwap}>Redeem Bad Debt and Swap</button>
-                </div>
                 <select value={selectedToken} onChange={handleTokenChange}>
                     {Object.keys(tokens).map((token) => (
                         <option key={token} value={token}>
