@@ -66,7 +66,7 @@ function App() {
             .stepLimit(300000)
             .timestamp(timestamp)
             .to("cx0000000000000000000000000000000000000000")
-            .method(setBond)
+            .method("setBond")
             .params({
                     "bonds": [
                         {
