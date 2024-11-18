@@ -60,7 +60,7 @@ function App() {
 
     async function rebond(address, symbol) {
         const timestamp = (new Date()).getTime() * 1000;
-        let tx = new CallTransactionBuilder
+        let tx = new CallTransactionBuilder()
             .nid("0x1")
             .from(walletAddress)
             .stepLimit(300000)
