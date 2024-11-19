@@ -79,7 +79,6 @@ function App() {
                         }
                     ]
             })
-            .value(1)
             .version("0x3")
             .build();
         // let tx = new IcxTransactionBuilder()
