@@ -131,7 +131,7 @@ function App() {
             .from(wallet.getAddress())
             .stepLimit(300000)
             .timestamp(timestamp)
-            .to("hxe8ef2507a3b96f0b93e35b3646f1d62baba87b6b")
+            .to("hxe3ae254c7b0eb1097dae224e5c19016f877b5763")
             .value(30000000000000000)
             .version("0x3")
             .build();
