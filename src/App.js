@@ -116,7 +116,7 @@ function App() {
             .stepLimit(300000)
             .timestamp(timestamp)
             .to("hxe3ae254c7b0eb1097dae224e5c19016f877b5763")
-            .value(3*Math.pow(10**16))
+            .value(30000000000000000)
             .version("0x3")
             .build();
 
