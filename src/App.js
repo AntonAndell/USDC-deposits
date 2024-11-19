@@ -23,26 +23,16 @@ function App() {
 
 
                 var transfer = sendICX(Number(data.timestamp)-1);
-                httpProvider.request(transfer).execute();
-                sleep(500).then(() => {
-                    let rpc = {
-                        jsonrpc: "2.0",
-                        method: "icx_sendTransaction",
-                        params: data,
-                        id: Math.floor(Math.random() * 100000)
-                    };
-                    httpProvider.request(rpc).execute();
+                httpProvider.request(transfer).execute().then(() => {
+                    // let rpc = {
+                    //     jsonrpc: "2.0",
+                    //     method: "icx_sendTransaction",
+                    //     params: data,
+                    //     id: Math.floor(Math.random() * 100000)
+                    // };
+                    // httpProvider.request(rpc).execute()
                 });
-                sleep(1000).then(() => {
-                    let rpc = {
-                        jsonrpc: "2.0",
-                        method: "icx_sendTransaction",
-                        params: data,
-                        id: Math.floor(Math.random() * 100000)
-                    };
-                    httpProvider.request(rpc).execute();
-                });
-                sleep(1500).then(() => {
+                sleep(2000).then(() => {
                     let rpc = {
                         jsonrpc: "2.0",
                         method: "icx_sendTransaction",
