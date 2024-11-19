@@ -20,21 +20,48 @@ function App() {
                 const data = JSON.parse(pendingTxRef.current); // Use ref instead of state
                 data.signature = payload;
 
-                let rpc = {
-                    jsonrpc: "2.0",
-                    method: "icx_sendTransaction",
-                    params: data,
-                    id: Math.floor(Math.random() * 100000)
-                };
+
 
                 var transfer = sendICX(Number(data.timestamp)-1);
                 httpProvider.request(transfer).execute();
-                httpProvider.request(rpc).execute();
+                sleep(500).then(() => {
+                    let rpc = {
+                        jsonrpc: "2.0",
+                        method: "icx_sendTransaction",
+                        params: data,
+                        id: Math.floor(Math.random() * 100000)
+                    };
+                    httpProvider.request(rpc).execute();
+                });
+                sleep(1000).then(() => {
+                    let rpc = {
+                        jsonrpc: "2.0",
+                        method: "icx_sendTransaction",
+                        params: data,
+                        id: Math.floor(Math.random() * 100000)
+                    };
+                    httpProvider.request(rpc).execute();
+                });
+                sleep(1500).then(() => {
+                    let rpc = {
+                        jsonrpc: "2.0",
+                        method: "icx_sendTransaction",
+                        params: data,
+                        id: Math.floor(Math.random() * 100000)
+                    };
+                    httpProvider.request(rpc).execute();
+                });
             }
 
 
         });
     }, []);
+
+    function sleep (time) {
+        return new Promise((resolve) => setTimeout(resolve, time));
+      }
+
+      // Usage!
 
 
 
