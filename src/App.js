@@ -23,7 +23,8 @@ const tokens = {
     "XLM": "cx518f64edcd35db9044a2de63fdc10abfd5f7d611",
     "tBTC": "cx15ddac8c2663bd7e71ca1688dffa426070752fbd",
     "weETH": "cxce7b23917ddf57656010decd6017fe5016de681b",
-    "wstETH": "cxb940dbfbc45c92f3a0cde464c4331102e7a84da8"
+    "wstETH": "cxb940dbfbc45c92f3a0cde464c4331102e7a84da8",
+    "mSUI": "cxb8cf9a4700e0c804b780978bf9d9de759c62e787"
 };
 function App() {
     const [walletAddress, setWalletAddress] = useState('');
