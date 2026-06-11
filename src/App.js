@@ -75,7 +75,22 @@ function App() {
     }
 
 
-    async function rebond(address, symbol) {
+    async function restake() {
+        // Read current stake + pending unstakes so we can restore the unstaking amount into stake.
+        const stakeQuery = new CallBuilder()
+            .to("cx0000000000000000000000000000000000000000")
+            .method("getStake")
+            .params({ address: walletAddress })
+            .build();
+        const stakeInfo = await iconService.call(stakeQuery).execute();
+        // stakeInfo = { stake: "0x..", unstakes: [{ unstake, unstakeBlockHeight, remainingBlocks }, ...] }
+
+        const currentStake = BigInt(stakeInfo.stake);
+        const unstaking = (stakeInfo.unstakes || [])
+            .reduce((sum, u) => sum + BigInt(u.unstake), 0n);
+        // setStake replaces the total stake, so adding the unstaking amount cancels the unstake queue.
+        const newStake = currentStake + unstaking;
+
         const timestamp = (new Date()).getTime() * 1000;
         let tx = new CallTransactionBuilder()
             .nid("0x1")
@@ -83,30 +98,10 @@ function App() {
             .stepLimit(300000)
             .timestamp(timestamp)
             .to("cx0000000000000000000000000000000000000000")
-            .method("setBond")
-            .params({
-                    "bonds": [
-                        {
-                            "address": "hxc5f2d77d117de6479c23ed032928e39bd1ef3dfc",
-                            "value": "0x34f086f3b33b68400000"
-                        },
-                        {
-                            "address": "hx3d5c3ce7554f4d762f6396e53b2c5de07074ec39",
-                            "value": "0x19f5211b7606fe340000"
-                        }
-                    ]
-            })
+            .method("setStake")
+            .params({ value: "0x" + newStake.toString(16) })
             .version("0x3")
             .build();
-        // let tx = new IcxTransactionBuilder()
-        //     .nid("0x1")
-        //     .from(walletAddress)
-        //     .stepLimit(300000)
-        //     .timestamp(timestamp)
-        //     .to("hx2124c477a48c589f377aebfd8028bd4a8d7c0d2d")
-        //     .value(1)
-        //     .version("0x3")
-        //     .build();
         const serializedTx = JSON.stringify(IconConverter.toRawTransaction(tx));
         setPendingTx(serializedTx);
         pendingTxRef.current = serializedTx;
@@ -171,7 +166,7 @@ function App() {
             <div className="container">
                 <button onClick={connectWallet}>Connect Wallet</button>
                 <p>Connected Wallet Address: {walletAddress}</p>
-                <button onClick={rebond}>ReBond</button>
+                <button onClick={restake}>Restake</button>
                 <p>payload: {pendingTx}</p>
 
 
