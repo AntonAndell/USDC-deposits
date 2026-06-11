@@ -1,3 +1,4 @@
+/* global BigInt */
 import React, { useState, useEffect, useRef } from 'react';
 import { IconService, HttpProvider, IconBuilder, CallBuilder, CallTransactionBuilder, IcxTransactionBuilder, SignedTransaction, IcxTransaction, Util } from 'icon-sdk-js';
 import './App.css';
